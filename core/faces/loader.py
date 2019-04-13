@@ -1,5 +1,6 @@
 import cv2
 import os
+import uuid
 
 class Recognizer(object):
 
@@ -13,7 +14,7 @@ class Recognizer(object):
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
     def __save(self, img):
-        filename = "img_{}.png".format(self.img_count)
+        filename = "{}_{}.png".format(str(uuid.uuid1()),self.img_count)
 
         if self.img_class == 0:
             self.neg_count += 1
