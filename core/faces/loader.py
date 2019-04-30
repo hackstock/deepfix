@@ -1,15 +1,14 @@
 import cv2
 import os
-import uuid
 
 class Recognizer(object):
 
-    def __init__(self, src, haar_path, pos_prefix, neg_prefix, size):
+    def __init__(self, src, haar_path, files_count, pos_prefix, neg_prefix, size):
         self.cap = cv2.VideoCapture(src)
         self.img_count = 0
         self.img_class = 1
-        self.pos_count = 0
-        self.neg_count = 0
+        self.pos_count = files_count
+        self.neg_count = files_count
         self.pos_prefix = pos_prefix
         self.neg_prefix = neg_prefix
         self.size = int(size)
@@ -19,10 +18,10 @@ class Recognizer(object):
     def __save(self, img):
         if self.img_class == 0:
             self.neg_count += 1
-            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.neg_prefix,uuid.uuid1())))
+            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.neg_prefix, self.neg_count)))
         else:
             self.pos_count += 1
-            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.pos_prefix,uuid.uuid1())))
+            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.pos_prefix, self.pos_count)))
 
         print("saving file to: {}".format(filename))
         img = cv2.resize(img, (self.size, self.size), interpolation=cv2.INTER_AREA)
@@ -41,7 +40,7 @@ class Recognizer(object):
 
             faces = self.classifier.detectMultiScale(gray, 1.3, 5)
             for (x,y,w,h) in faces:
-                roi = gray[y:y+h,x:x+w]
+                roi = frame[y:y+h,x:x+w]
                 cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
 
             cv2.imshow("Camera", frame)
@@ -53,7 +52,8 @@ class Recognizer(object):
             elif key == ord("s"):
                 self.__save(roi)
             elif key == ord("q"):
-                break
+                if self.pos_count == self.neg_count:
+                    break
 
         self.cap.release()
         cv2.destroyAllWindows()
