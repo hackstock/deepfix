@@ -4,27 +4,28 @@ import uuid
 
 class Recognizer(object):
 
-    def __init__(self, src, haar_path):
+    def __init__(self, src, haar_path, pos_prefix, neg_prefix, size):
         self.cap = cv2.VideoCapture(src)
         self.img_count = 0
         self.img_class = 1
         self.pos_count = 0
         self.neg_count = 0
+        self.pos_prefix = pos_prefix
+        self.neg_prefix = neg_prefix
+        self.size = int(size)
         self.classifier = cv2.CascadeClassifier(haar_path)
         self.font = cv2.FONT_HERSHEY_SIMPLEX
 
     def __save(self, img):
-        filename = "{}_{}.png".format(str(uuid.uuid1()),self.img_count)
-
         if self.img_class == 0:
             self.neg_count += 1
-            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/negatives/{}".format(filename)))
+            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.neg_prefix,uuid.uuid1())))
         else:
             self.pos_count += 1
-            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/positives/{}".format(filename)))
+            filename = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../images/{}.{}.png".format(self.pos_prefix,uuid.uuid1())))
 
         print("saving file to: {}".format(filename))
-        img = cv2.resize(img, (64,64), interpolation=cv2.INTER_AREA)
+        img = cv2.resize(img, (self.size, self.size), interpolation=cv2.INTER_AREA)
         cv2.imwrite(filename, img)
         self.img_count += 1
     
